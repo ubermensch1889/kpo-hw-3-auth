@@ -1,23 +1,21 @@
 package hse.se.kpo.hw.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.*;
 
 import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
-public class User {
+@Table(name = "app_user")
+public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int id;
 
     @Column(nullable = false, length = 50)
@@ -29,6 +27,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @CreationTimestamp
+    @Column(nullable = false)
     private Timestamp created;
 }

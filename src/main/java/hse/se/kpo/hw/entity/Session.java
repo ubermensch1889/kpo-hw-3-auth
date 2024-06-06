@@ -1,15 +1,12 @@
 package hse.se.kpo.hw.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.*;
 
 import java.sql.Timestamp;
 
 @Entity
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,11 +15,12 @@ import java.sql.Timestamp;
 public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Column(insertable=false, updatable=false)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
 
     @Column(nullable = false)
     private String token;

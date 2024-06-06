@@ -3,14 +3,9 @@ package hse.se.kpo.hw.controller;
 import hse.se.kpo.hw.dto.request.LoginRequest;
 import hse.se.kpo.hw.dto.request.RegistrationRequest;
 import hse.se.kpo.hw.dto.response.AuthResponse;
-import hse.se.kpo.hw.repository.UserRepository;
 import hse.se.kpo.hw.service.AuthService;
-import org.apache.catalina.connector.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -40,5 +35,10 @@ public class AuthController {
         catch (ResponseStatusException ex) {
             return new ResponseEntity<>(new AuthResponse("", ex.getMessage()), ex.getStatusCode());
         }
+    }
+
+    @GetMapping("/check-auth")
+    public ResponseEntity<Boolean> checkAuthorized(@RequestParam String token) {
+        return ResponseEntity.ok(authService.checkAuthorized(token));
     }
 }

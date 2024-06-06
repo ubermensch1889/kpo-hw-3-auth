@@ -76,4 +76,20 @@ public class AuthService {
 
         return jwt;
     }
+
+    public Boolean checkAuthorized(String token) {
+        Optional<Session> session = sessionRepo.findByToken(token);
+
+        if (session.isEmpty()) {
+            return false;
+        }
+
+        if (session.get().getExpires().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            // Удаляем сессию, если она истекла.
+            sessionRepo.delete(session.get());
+            return false;
+        }
+
+        return true;
+    }
 }

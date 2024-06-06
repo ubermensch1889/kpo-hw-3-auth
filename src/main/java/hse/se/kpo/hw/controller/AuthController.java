@@ -3,6 +3,7 @@ package hse.se.kpo.hw.controller;
 import hse.se.kpo.hw.dto.request.LoginRequest;
 import hse.se.kpo.hw.dto.request.RegistrationRequest;
 import hse.se.kpo.hw.dto.response.AuthResponse;
+import hse.se.kpo.hw.dto.response.CheckAuthResponse;
 import hse.se.kpo.hw.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class AuthController {
     }
 
     @GetMapping("/check-auth")
-    public ResponseEntity<Boolean> checkAuthorized(@RequestParam String token) {
+    public ResponseEntity<CheckAuthResponse> checkAuthorized(@RequestParam String token) {
         return ResponseEntity.ok(authService.checkAuthorized(token));
     }
 }

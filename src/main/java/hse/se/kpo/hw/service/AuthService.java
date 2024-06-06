@@ -3,6 +3,7 @@ package hse.se.kpo.hw.service;
 import hse.se.kpo.hw.dto.request.LoginRequest;
 import hse.se.kpo.hw.dto.request.RegistrationRequest;
 import hse.se.kpo.hw.dto.response.AuthResponse;
+import hse.se.kpo.hw.dto.response.CheckAuthResponse;
 import hse.se.kpo.hw.entity.AppUser;
 import hse.se.kpo.hw.entity.Session;
 import hse.se.kpo.hw.repository.SessionRepository;
@@ -77,19 +78,19 @@ public class AuthService {
         return jwt;
     }
 
-    public Boolean checkAuthorized(String token) {
+    public CheckAuthResponse checkAuthorized(String token) {
         Optional<Session> session = sessionRepo.findByToken(token);
 
         if (session.isEmpty()) {
-            return false;
+                return new CheckAuthResponse(0, false);
         }
 
         if (session.get().getExpires().before(Timestamp.valueOf(LocalDateTime.now()))) {
             // Удаляем сессию, если она истекла.
             sessionRepo.delete(session.get());
-            return false;
+            return new CheckAuthResponse(0, false);
         }
 
-        return true;
+        return new CheckAuthResponse(session.get().getUser().getId(), true);
     }
 }

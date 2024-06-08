@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthService {
@@ -27,6 +28,15 @@ public class AuthService {
     private final SessionRepository sessionRepo;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
+            "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+    private final String passwordRegex = "^(?=.*[0-9])"
+            + "(?=.*[a-z])(?=.*[A-Z])"
+            + "(?=.*[@#$%^&+=])"
+            + "(?=\\S+$).{8,20}$";
+    private final Pattern emailPat = Pattern.compile(emailRegex);
+    private final Pattern passwordPat = Pattern.compile(passwordRegex);
+
     public AuthService(UserRepository userRepo, SessionRepository sessionRepo, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.sessionRepo = sessionRepo;
@@ -40,6 +50,25 @@ public class AuthService {
         if (userRepo.findByEmail(request.getEmail()).isPresent()) {
             // Возвращаем 409, так как такой пользователь уже существует.
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The user with this email is already registered.");
+        }
+
+        if (!emailPat.matcher(request.getEmail()).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email.");
+        }
+
+        if (request.getNickname().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid nickname.");
+        }
+
+        // Условия для пароля:
+        // Он содержит не менее 8 символов и не более 20 символов.
+        // Он содержит хотя бы одну цифру.
+        // Он содержит хотя бы один алфавит верхнего регистра.
+        // Он содержит хотя бы один строчный алфавит.
+        // Он содержит как минимум один специальный символ, включая !@#$%&*()-+=^ .
+        // Он не содержит пробелов.
+        if (!passwordPat.matcher(request.getPassword()).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password.");
         }
 
         AppUser user = AppUser.builder()
@@ -67,11 +96,7 @@ public class AuthService {
         String jwt = jwtService.generateToken(user.get());
 
         // Создаем сессию на основе выданного токена. Сессия длится 10 минут.
-        Session session = Session.builder()
-                .user(user.get())
-                .token(jwt)
-                .expires(Timestamp.valueOf(LocalDateTime.now().plusMinutes(10)))
-                .build();
+        Session session = Session.builder().user(user.get()).token(jwt).expires(Timestamp.valueOf(LocalDateTime.now().plusMinutes(10))).build();
 
         sessionRepo.save(session);
 
@@ -82,7 +107,7 @@ public class AuthService {
         Optional<Session> session = sessionRepo.findByToken(token);
 
         if (session.isEmpty()) {
-                return new CheckAuthResponse(0, false);
+            return new CheckAuthResponse(0, false);
         }
 
         if (session.get().getExpires().before(Timestamp.valueOf(LocalDateTime.now()))) {

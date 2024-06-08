@@ -18,16 +18,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public Claims extractAllClaims(String token) {
-        return Jwts.parser().verifyWith(signingKey())
-                .build().parseSignedClaims(token).getPayload();
-    }
-
-    public Boolean isValid(String token, UserDetails user) {
-        return extractAllClaims(token).getSubject().equals(user.getUsername())
-                && !extractAllClaims(token).getExpiration().before(new Date());
-    }
-
     public String generateToken(AppUser user) {
         return Jwts.builder().subject(user.getEmail())
                 .issuedAt(new Date(System.currentTimeMillis()))
